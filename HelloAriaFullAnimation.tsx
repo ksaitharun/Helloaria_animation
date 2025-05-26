@@ -1,128 +1,112 @@
-import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
 
-export default function HelloAriaFullAnimation() {
-  const [scene, setScene] = useState(0);
-
-  useEffect(() => {
-    const timeouts = [
-      setTimeout(() => setScene(1), 3000),  // 3s -> scene1
-      setTimeout(() => setScene(2), 7000),  // 7s -> scene2
-      setTimeout(() => setScene(3), 12000), // 12s -> scene3
-      setTimeout(() => setScene(4), 16000), // 16s -> scene4
-      setTimeout(() => setScene(5), 20000), // 20s -> scene5
-    ];
-    return () => timeouts.forEach(clearTimeout);
-  }, []);
+// Chat bubble component
+const ChatBubble = ({ sender, text }) => {
+  const common = 'max-w-[78%] px-4 py-2 text-sm rounded-2xl shadow-md break-words';
+  const botStyle = 'self-start bg-[#303235] text-gray-100 rounded-bl-none';
+  const userStyle = 'self-end bg-gradient-to-br from-green-500 to-green-600 text-white rounded-br-none';
 
   return (
-    <div className="relative w-full h-full overflow-hidden bg-gray-50">
-      <AnimatePresence>
-        {scene === 0 && (
-          <motion.div
-            key="0"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="absolute inset-0 flex flex-col items-center justify-center bg-cover bg-center"
-            style={{ backgroundImage: "url('/clutter-desk.jpg')" }}
-          >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 1 }}
-              className="p-4 bg-white/80 rounded-lg text-xl font-semibold"
-            >
-              "Feeling buried under tasks and reminders?"
-            </motion.div>
-          </motion.div>
-        )}
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+      className={`${common} ${sender === 'aria' ? botStyle : userStyle}`}
+    >
+      {text}
+    </motion.div>
+  );
+};
 
-        {scene === 1 && (
-          <motion.div
-            key="1"
-            initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
-            transition={{ duration: 0.8 }}
-            className="absolute inset-0 bg-white flex items-center justify-center"
-          >
-            {/* WhatsApp Chat window placeholder */}
-            <div className="w-[360px] h-[640px] border rounded-xl bg-green-50">
-              <p className="text-center mt-4 font-medium">WhatsApp Chat</p>
-            </div>
-          </motion.div>
-        )}
+// Typing indicator dots
+const TypingDots = () => (
+  <div className="flex gap-1">
+    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.24s]" />
+    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.12s]" />
+    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+  </div>
+);
 
-        {scene === 2 && (
-          <motion.div
-            key="2"
-            initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.6 }}
-            className="absolute inset-0 flex items-center justify-center"
-          >
-            <div className="w-[360px] h-[640px] border rounded-xl bg-white p-4">
-              <div className="flex flex-col gap-2">
-                <div className="self-end bg-green-500 text-white px-3 py-2 rounded-lg">
-                  Remind me to call mom every Sunday.
-                </div>
-                <div className="self-start bg-gray-200 px-3 py-2 rounded-lg">
-                  Reminder created! ✅
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
+// Main chat animation component
+export default function HelloAriaChatAnimation() {
+  const conversation = [
+    { sender: 'user', text: "Hey Aria, add 'Finish project report by Thursday'." },
+    { sender: 'aria', text: 'Task added! ✅ Would you like me to set a reminder?' },
+    { sender: 'user', text: 'Yes, remind me an hour before.' },
+    { sender: 'aria', text: 'Reminder set! 🔔 Anything else?' },
+    { sender: 'user', text: "Also add 'Call client on Friday at 3 PM'." },
+    { sender: 'aria', text: 'Task added! Anything else I can help with?' },
+    { sender: 'user', text: "That\'s all, thanks!" },
+    { sender: 'aria', text: 'Always here to help you stay organized! 😊' }
+  ];
 
-        {scene === 3 && (
-          <motion.div
-            key="3"
-            initial={{ y: '100%', opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.8 }}
-            className="absolute inset-0 flex items-center justify-center bg-gray-100"
-          >
-            <div className="w-[360px] h-[640px] border rounded-xl bg-white p-6 flex flex-col items-center justify-center gap-4">
-              <div className="w-24 h-24 bg-gray-300 rounded-md flex items-center justify-center">
-                <span className="text-2xl">📸</span>
-              </div>
-              <p className="text-lg">Snap a photo of your grocery list</p>
-              <div className="w-full bg-green-50 p-4 rounded-lg">
-                <p>→ Milk</p>
-                <p>→ Eggs</p>
-                <p>→ Bread</p>
-              </div>
-            </div>
-          </motion.div>
-        )}
+  const [visible, setVisible] = useState([]);
+  const [typing, setTyping] = useState(false);
+  const chatEndRef = useRef(null);
 
-        {scene === 4 && (
-          <motion.div
-            key="4"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-            className="absolute inset-0 flex items-center justify-center bg-black text-white"
-          >
-            <div className="w-[360px] h-[640px] border rounded-xl bg-gray-900 p-4 flex flex-col justify-between">
-              <div className="self-center text-lg">"Drink water at 3PM"</div>
-              <button className="self-center bg-green-600 px-4 py-2 rounded-lg">✔️ Done</button>
-            </div>
-          </motion.div>
-        )}
+  // Sequentially display messages with typing delays
+  useEffect(() => {
+    if (visible.length < conversation.length) {
+      const current = conversation[visible.length];
+      setTyping(true);
+      const delay = current.sender === 'user' ? 1200 : 1800;
+      const t = setTimeout(() => {
+        setVisible(prev => [...prev, current]);
+        setTyping(false);
+      }, delay);
+      return () => clearTimeout(t);
+    }
+  }, [visible]);
 
-        {scene === 5 && (
-          <motion.div
-            key="5"
-            initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.7 }}
-            className="absolute inset-0 flex items-center justify-center bg-white"
-          >
-            <div className="w-[400px] h-[300px] border rounded-lg p-6 shadow-lg">
-              <h2 className="text-xl font-semibold mb-4">Dashboard</h2>
-              <div className="flex justify-around">
-                <div className="flex flex-col items-center"><span className="text-4xl">👪</span><p>Family</p></div>
-                <div className="flex flex-col items-center"><span className="text-4xl">👥</span><p>Friends</p></div>
-                <div className="flex flex-col items-center"><span className="text-4xl">💼</span><p>Work</p></div>
-              </div>
+  // Auto-scroll to bottom
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [visible, typing]);
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+      {/* iPhone Frame */}
+      <div className="relative w-[360px] h-[680px] bg-black rounded-[48px] shadow-2xl overflow-hidden">
+        {/* Bezel */}
+        <div className="absolute inset-0 rounded-[42px] border-[10px] border-gray-300 pointer-events-none" />
+        {/* Notch */}
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 w-24 h-3 bg-[#666] rounded-full" />
+
+        {/* Header */}
+        <header className="absolute top-16 left-12 right-12 h-12 bg-[#0f0f0f]/90 backdrop-blur-md flex items-center gap-3 px-4 rounded-[18px]">
+          <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-xs font-bold text-white ring-2 ring-white">A</div>
+          <div className="flex flex-col leading-4">
+            <span className="text-white text-sm font-medium">Hello Aria</span>
+            <span className="text-[10px] text-gray-400">online</span>
+          </div>
+        </header>
+
+        {/* Chat area */}
+        <main
+          className="absolute top-[92px] bottom-[88px] left-0 right-0 flex flex-col gap-3 px-4 py-4 overflow-y-auto"
+          style={{ scrollbarWidth: 'none' }}
+        >
+          {visible.map((msg, i) => (
+            <ChatBubble key={i} sender={msg.sender} text={msg.text} />
+          ))}
+          {typing && (
+            <div className="self-end bg-[#2c2c2e] px-3 py-1 rounded-full">
+              <TypingDots />
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+          <div ref={chatEndRef} />
+        </main>
+
+        {/* Footer */}
+        <footer className="absolute bottom-0 left-0 right-0 h-20 bg-[#151515]/90 backdrop-blur-md flex items-center gap-3 px-4 rounded-b-[40px]">
+          <div className="w-7 h-7 bg-[#2c2c2e] rounded-full flex items-center justify-center text-lg text-gray-300 font-bold">+</div>
+          <div className="flex-1 h-10 bg-[#2c2c2e] text-gray-400 rounded-full flex items-center px-5 text-sm">Message…</div>
+          <svg className="w-7 h-7 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M2 21l21-9L2 3v7l15 2-15 2z" />
+          </svg>
+        </footer>
+      </div>
     </div>
   );
 }
